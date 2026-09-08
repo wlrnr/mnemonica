@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0e">
+<title>Midnight Order — Mnemonica Trainer</title>
+<style>
+:root{
+  --bg:#0b0b0e; --panel:#141419; --panel2:#1b1b23; --text:#f2f0e9;
+  --muted:#8e8e99; --line:#2b2b34; --accent:#d8aa55; --good:#62c98a; --bad:#e56b6f;
+  --card:#f4f0e6; --red:#c94a4a; --shadow:0 20px 50px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh;max-width:760px;margin:auto;padding-bottom:96px}
+header{padding:28px 20px 12px;display:flex;align-items:end;justify-content:space-between}
+.brand{font-family:Georgia,serif;font-size:26px;letter-spacing:-.03em}
+.subtitle{font-size:11px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-top:3px}
+.header-stat{font-size:12px;color:var(--muted)}
+main{padding:8px 18px 24px}
+.view{display:none}.view.active{display:block}
+h1{font-family:Georgia,serif;font-size:30px;font-weight:400;margin:14px 2px 8px}
+h2{font-size:14px;font-weight:600;margin:0}
+.lead{color:var(--muted);font-size:13px;line-height:1.5;margin:0 2px 22px}
+.card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stack-card{background:var(--card);color:#17171b;border-radius:10px;min-height:86px;padding:9px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 5px 15px rgba(0,0,0,.12)}
+.stack-card .pos{font-size:11px;color:#777}.stack-card .face{font-family:Georgia,serif;font-size:24px;align-self:center;padding:8px 0}.red{color:var(--red)!important}
+.boundary{margin-top:8px}
+.card-grid.quarters{gap:12px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px;padding:11px 14px}
+.btn.primary{background:var(--accent);color:#17140d;border-color:var(--accent);font-weight:700}
+.btn.ghost{background:transparent}
+.btn:active{transform:translateY(1px)}
+.training{min-height:620px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.mode-label{margin-top:12px;font-size:11px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+.question{font-family:Georgia,serif;font-size:76px;line-height:1;margin:34px 0 26px}
+.playing-card{width:118px;height:166px;background:var(--card);color:#18181c;border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:space-between;padding:13px 14px;margin:28px 0 26px;text-align:left}
+.playing-card .corner{font-family:Georgia,serif;font-size:27px;line-height:1}.playing-card .suit{font-size:20px}.playing-card .center{font-family:Georgia,serif;font-size:42px;align-self:center}
+.card-picker{width:min(390px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 auto 8px}
+.selected-card{height:58px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:30px;margin-bottom:14px}
+.picker-label{text-align:left;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:13px 2px 8px}
+.rank-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.rank-grid button,.suit-btn{border:1px solid var(--line);background:#1b1b22;color:var(--text);border-radius:10px;min-height:44px;font-size:16px;font-weight:600}
+.rank-grid button.active,.suit-btn.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:#24221d}
+.suit-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.suit-btn{font-family:Georgia,serif;font-size:25px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;gap:3px}
+.suit-btn span{font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:8px;font-weight:500;color:var(--muted)}
+.suit-btn.red{color:var(--red)}.suit-btn.black{color:var(--text)}
+.picker-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:8px;margin-top:14px}
+.answer-row{display:flex;gap:8px;width:min(330px,100%);margin:4px auto 12px}
+.answer-row input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:13px 14px;text-align:center;outline:none}
+.answer-row input:focus{border-color:#777}
+.number-pad{width:min(390px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 auto 8px}
+.number-display{height:58px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:30px;margin-bottom:14px}
+.number-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.number-grid button{border:1px solid var(--line);background:#1b1b22;color:var(--text);border-radius:10px;min-height:48px;font-size:18px;font-weight:600}
+.number-grid button:active{background:#292931}
+.number-grid button.wide{grid-column:auto}
+.feedback{min-height:42px;font-size:13px;line-height:1.45;margin:8px 0 14px}
+.feedback.good{color:var(--good)}.feedback.bad{color:var(--bad)}
+.meta{display:flex;gap:16px;color:var(--muted);font-size:12px;margin-top:auto;padding-top:18px}
+.segment{display:flex;background:var(--panel);border:1px solid var(--line);padding:4px;border-radius:12px;margin:14px 0 20px}
+.segment button{flex:1;background:transparent;border:0;color:var(--muted);padding:9px;border-radius:9px;font-size:12px}
+.segment button.active{background:var(--panel2);color:var(--text)}
+.shift-box{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;margin-top:10px}
+.shift-line{display:flex;justify-content:center;align-items:center;gap:18px;font-size:12px;color:var(--muted)}
+.shift-big{font-family:Georgia,serif;font-size:36px;color:var(--text);margin:12px 0 20px}
+.target{font-family:Georgia,serif;font-size:52px;margin:10px 0 24px}
+.neighbor-card{margin:22px auto;width:118px}
+.neighbor-row{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;align-items:center;margin:18px 0}
+.neighbor{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 8px}
+.neighbor.center{background:var(--card);color:#17171b;border-color:transparent}
+.neighbor .small{font-size:10px;color:var(--muted);margin-bottom:7px}.neighbor.center .small{color:#777}
+.neighbor .nc{font-family:Georgia,serif;font-size:22px}
+.neighbor.center .nc.red{color:var(--red)!important}
+.stat-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:16px}
+.stat-line{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.stat-line:last-child{border-bottom:0}.muted{color:var(--muted)}
+.bottom-nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(760px,100%);background:rgba(12,12,16,.94);backdrop-filter:blur(18px);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);z-index:10}
+.nav-btn{border:0;background:transparent;color:var(--muted);padding:7px 2px;border-radius:10px;font-size:10px}
+.nav-btn .icon{font-size:18px;display:block;margin-bottom:3px}.nav-btn.active{color:var(--text);background:var(--panel)}
+@media(min-width:600px){.card-grid{grid-template-columns:repeat(6,1fr)}main{padding:10px 28px 30px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div><div class="brand">Midnight Order</div><div class="subtitle">Mnemonica Trainer</div></div>
+  <div class="header-stat" id="headerStat">0 / 0 today</div>
+</header>
+
+<main>
+<section class="view active" id="view-stack">
+  <h1>Stack</h1>
+  <p class="lead">The complete Mnemonica order. Tap “Hide positions” to turn this into a visual recall sheet.</p>
+  <div class="controls">
+    <button class="btn" id="togglePositions">Hide positions</button>
+    <button class="btn" id="scrollTopBtn">Top</button>
+  </div>
+  <div class="card-grid" id="stackGrid"></div>
+</section>
+
+<section class="view" id="view-position">
+  <div class="training">
+    <div class="mode-label">Position → Card</div>
+    <div class="question" id="positionQuestion">37</div>
+    <div class="card-picker" id="cardPicker">
+      <div class="selected-card" id="selectedCard">—</div>
+      <div class="picker-label">Rank</div>
+      <div class="rank-grid">
+        <button data-rank="A">A</button><button data-rank="2">2</button><button data-rank="3">3</button><button data-rank="4">4</button>
+        <button data-rank="5">5</button><button data-rank="6">6</button><button data-rank="7">7</button><button data-rank="8">8</button>
+        <button data-rank="9">9</button><button data-rank="10">10</button><button data-rank="J">J</button><button data-rank="Q">Q</button>
+        <button data-rank="K">K</button>
+      </div>
+      <div class="picker-label">Suit</div>
+      <div class="suit-grid">
+        <button class="suit-btn black" data-suit="♠">♠<span>Spades</span></button>
+        <button class="suit-btn red" data-suit="♥">♥<span>Hearts</span></button>
+        <button class="suit-btn red" data-suit="♦">♦<span>Diamonds</span></button>
+        <button class="suit-btn black" data-suit="♣">♣<span>Clubs</span></button>
+      </div>
+      <div class="picker-actions">
+        <button class="btn ghost" id="positionClear">Clear</button>
+        <button class="btn primary" id="positionCheck">Check</button>
+      </div>
+    </div>
+    <div class="feedback" id="positionFeedback"></div>
+    <button class="btn ghost" id="positionNext">Next question →</button>
+    <div class="meta"><span id="positionScore">0 / 0</span><span id="positionStreak">Streak 0</span></div>
+  </div>
+</section>
+
+<section class="view" id="view-card">
+  <div class="training">
+    <div class="mode-label">Card → Position</div>
+    <div class="playing-card" id="cardQuestion"></div>
+    <div class="number-pad" id="cardNumberPad">
+      <div class="number-display" id="cardInputDisplay">—</div>
+      <div class="number-grid">
+        <button data-num="1">1</button><button data-num="2">2</button><button data-num="3">3</button>
+        <button data-num="4">4</button><button data-num="5">5</button><button data-num="6">6</button>
+        <button data-num="7">7</button><button data-num="8">8</button><button data-num="9">9</button>
+        <button class="wide" data-num="0">0</button><button data-action="backspace">⌫</button>
+      </div>
+      <div class="picker-actions">
+        <button class="btn ghost" id="cardClear">Clear</button>
+        <button class="btn primary" id="cardCheck">Check</button>
+      </div>
+    </div>
+    <div class="feedback" id="cardFeedback"></div>
+    <button class="btn ghost" id="cardNext">Next question →</button>
+    <div class="meta"><span id="cardScore">0 / 0</span><span id="cardStreak">Streak 0</span></div>
+  </div>
+</section>
+
+<section class="view" id="view-shift">
+  <div class="training">
+    <div class="mode-label">Shift · Cyclic 52-card deck</div>
+    <div class="shift-box">
+      <div class="shift-line"><span>Card</span><span>Target position</span></div>
+      <div class="shift-big" id="shiftCard"></div>
+      <div class="target" id="shiftTarget">21</div>
+      <div class="muted" style="font-size:12px">How many cards should you cut?</div>
+    </div>
+    <div class="number-pad" id="shiftNumberPad" style="margin-top:20px">
+      <div class="number-display" id="shiftInputDisplay">—</div>
+      <div class="number-grid">
+        <button data-shift-num="1">1</button><button data-shift-num="2">2</button><button data-shift-num="3">3</button>
+        <button data-shift-num="4">4</button><button data-shift-num="5">5</button><button data-shift-num="6">6</button>
+        <button data-shift-num="7">7</button><button data-shift-num="8">8</button><button data-shift-num="9">9</button>
+        <button class="wide" data-shift-num="0">0</button><button data-shift-action="backspace">⌫</button>
+      </div>
+      <div class="picker-actions">
+        <button class="btn ghost" id="shiftClear">Clear</button>
+        <button class="btn primary" id="shiftCheck">Check</button>
+      </div>
+    </div>
+    <div class="feedback" id="shiftFeedback"></div>
+    <button class="btn ghost" id="shiftNext">Next question →</button>
+    <div class="meta"><span id="shiftScore">0 / 0</span><span id="shiftStreak">Streak 0</span></div>
+  </div>
+</section>
+
+<section class="view" id="view-around">
+  <div class="training">
+    <div class="mode-label">Next / Previous</div>
+    <p class="lead" style="max-width:420px">Train the sequence itself. Identify the card immediately before and after the given card.</p>
+    <div class="playing-card neighbor-card" id="aroundQuestion"></div>
+    <div class="neighbor-row">
+      <div class="neighbor" id="prevAnswer"><div class="small">PREVIOUS</div><div class="nc">?</div></div>
+      <div class="neighbor center"><div class="small">CURRENT</div><div class="nc" id="aroundCenter">?</div></div>
+      <div class="neighbor" id="nextAnswer"><div class="small">NEXT</div><div class="nc">?</div></div>
+    </div>
+    <div class="controls">
+      <button class="btn primary" id="aroundReveal">Reveal</button>
+      <button class="btn ghost" id="aroundNext">New card →</button>
+    </div>
+    <div class="meta"><span id="aroundSeen">Cards seen 0</span><span>Wraps 52 → 1</span></div>
+  </div>
+</section>
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-view="stack"><span class="icon">▦</span>Stack</button>
+  <button class="nav-btn" data-view="position"><span class="icon">#</span>Position</button>
+  <button class="nav-btn" data-view="card"><span class="icon">♠</span>Card</button>
+  <button class="nav-btn" data-view="shift"><span class="icon">↻</span>Shift</button>
+  <button class="nav-btn" data-view="around"><span class="icon">↔</span>Around</button>
+</nav>
+</div>
+
+<script>
+const STACK = ["4♣", "2♥", "7♦", "3♣", "4♥", "6♦", "A♠", "5♥", "9♠", "2♠", "Q♥", "3♦", "Q♣", "8♥", "6♠", "5♠", "9♥", "K♣", "2♦", "J♥", "3♠", "8♠", "6♥", "10♣", "5♦", "K♦", "2♣", "3♥", "8♦", "5♣", "K♠", "J♦", "8♣", "10♠", "K♥", "J♣", "7♠", "10♥", "A♦", "4♠", "7♥", "4♦", "A♣", "9♣", "J♠", "Q♦", "7♣", "Q♠", "10♦", "6♣", "A♥", "9♦"];
+const SUITS = {'♠':'black','♣':'black','♥':'red','♦':'red'};
+const $ = id => document.getElementById(id);
+let hidePositions=false;
+let currentPosition = 37, currentCard = 36, shiftCardIndex=36, shiftTarget=21, shiftInputValue='', aroundIndex=36;
+let stats = JSON.parse(localStorage.getItem('midnightStats') || '{"position":{"c":0,"w":0,"streak":0},"card":{"c":0,"w":0,"streak":0},"shift":{"c":0,"w":0,"streak":0}}');
+let today = new Date().toISOString().slice(0,10);
+let daily = JSON.parse(localStorage.getItem('midnightDaily') || '{"date":"","attempts":0,"correct":0}');
+if(daily.date!==today){daily={date:today,attempts:0,correct:0};saveDaily();}
+
+function save(){localStorage.setItem('midnightStats',JSON.stringify(stats)); updateHeader();}
+function saveDaily(){localStorage.setItem('midnightDaily',JSON.stringify(daily)); updateHeader();}
+function updateHeader(){ $('headerStat').textContent = `${daily.correct} / ${daily.attempts} today`; }
+
+function cardHTML(card, pos, showPos=true){
+  const suit=card.slice(-1), red=SUITS[suit]==='red';
+  return `<div class="stack-card ${red?'red':''}"><div class="pos">${showPos?String(pos).padStart(2,'0'):''}</div><div class="face">${card}</div></div>`;
+}
+function renderStack(){
+  $('stackGrid').innerHTML=STACK.map((c,i)=>cardHTML(c,i+1,!hidePositions)).join('');
+}
+$('togglePositions').onclick=()=>{hidePositions=!hidePositions;$('togglePositions').textContent=hidePositions?'Show positions':'Hide positions';renderStack();};
+$('scrollTopBtn').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  $('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+
+function normalizeCard(s){
+  return s.trim().replace(/\s+/g,'').toUpperCase()
+    .replace(/^10([♠♣♥♦])$/,'10$1')
+    .replace(/S$/,'♠').replace(/C$/,'♣').replace(/H$/,'♥').replace(/D$/,'♦');
+}
+function cardClass(card){
+  const suit=card.slice(-1); return SUITS[suit]==='red'?'red':'';
+}
+function renderPlayingCard(el, card){
+  const suit=card.slice(-1), rank=card.slice(0,-1);
+  el.className='playing-card '+cardClass(card);
+  el.innerHTML=`<div class="corner">${rank}<br><span class="suit">${suit}</span></div><div class="center">${suit}</div><div class="corner" style="transform:rotate(180deg)">${rank}<br><span class="suit">${suit}</span></div>`;
+}
+function randPos(){return Math.floor(Math.random()*52)+1;}
+function randIndex(){return Math.floor(Math.random()*52);}
+function record(mode,ok){
+  if(ok){stats[mode].c++;stats[mode].streak++;daily.correct++}
+  else {stats[mode].w++;stats[mode].streak=0}
+  daily.attempts++;save();saveDaily();renderStats(mode);
+}
+function renderStats(mode){
+  const s=stats[mode]; $(mode+'Score').textContent=`${s.c} / ${s.c+s.w}`; $(mode+'Streak').textContent=`Streak ${s.streak}`;
+}
+function clearFeedback(id){$(id).textContent='';$(id).className='feedback';}
+
+let pickedRank='', pickedSuit='';
+function renderPickedCard(){
+  const el=$('selectedCard');
+  el.textContent=pickedRank&&pickedSuit ? pickedRank+pickedSuit : (pickedRank || '—');
+  el.className='selected-card '+(pickedSuit && SUITS[pickedSuit]==='red'?'red':'');
+  document.querySelectorAll('.rank-grid button').forEach(b=>b.classList.toggle('active',b.dataset.rank===pickedRank));
+  document.querySelectorAll('.suit-grid button').forEach(b=>b.classList.toggle('active',b.dataset.suit===pickedSuit));
+}
+function clearCardPicker(){pickedRank='';pickedSuit='';renderPickedCard();}
+function newPosition(){
+  currentPosition=randPos(); $('positionQuestion').textContent=currentPosition; clearCardPicker(); clearFeedback('positionFeedback');
+}
+function checkPosition(){
+  const input=pickedRank+pickedSuit, answer=STACK[currentPosition-1];
+  if(!pickedRank || !pickedSuit)return;
+  const ok=input===answer; record('position',ok);
+  $('positionFeedback').className='feedback '+(ok?'good':'bad');
+  $('positionFeedback').innerHTML=ok?`✓ Correct — ${answer}`:`✕ Correct answer: <b>${answer}</b>`;
+}
+document.querySelectorAll('.rank-grid button').forEach(b=>b.onclick=()=>{pickedRank=b.dataset.rank;renderPickedCard();});
+document.querySelectorAll('.suit-grid button').forEach(b=>b.onclick=()=>{pickedSuit=b.dataset.suit;renderPickedCard();});
+$('positionClear').onclick=clearCardPicker;
+$('positionCheck').onclick=checkPosition;
+$('positionNext').onclick=newPosition;
+
+let cardPositionInput='';
+function renderCardPositionInput(){
+  $('cardInputDisplay').textContent=cardPositionInput || '—';
+}
+function clearCardPositionInput(){cardPositionInput='';renderCardPositionInput();}
+function newCard(){
+  currentCard=randIndex();renderPlayingCard($('cardQuestion'),STACK[currentCard]);clearCardPositionInput();clearFeedback('cardFeedback');
+}
+function checkCard(){
+  const n=parseInt(cardPositionInput,10), answer=currentCard+1;
+  if(Number.isNaN(n))return;
+  const ok=n===answer; record('card',ok);
+  $('cardFeedback').className='feedback '+(ok?'good':'bad');
+  $('cardFeedback').innerHTML=ok?`✓ Correct — position ${answer}`:`✕ Correct position: <b>${answer}</b>`;
+}
+document.querySelectorAll('#cardNumberPad [data-num]').forEach(b=>b.onclick=()=>{
+  if(cardPositionInput.length<2){
+    const next=cardPositionInput+b.dataset.num;
+    if(parseInt(next,10)<=52) cardPositionInput=next;
+    renderCardPositionInput();
+  }
+});
+document.querySelector('#cardNumberPad [data-action="backspace"]').onclick=()=>{
+  cardPositionInput=cardPositionInput.slice(0,-1);renderCardPositionInput();
+};
+$('cardClear').onclick=clearCardPositionInput;
+$('cardCheck').onclick=checkCard;
+$('cardNext').onclick=newCard;
+
+function newShift(){
+  shiftCardIndex=randIndex();shiftTarget=randPos();
+  $('shiftCard').innerHTML=`<span class="${cardClass(STACK[shiftCardIndex])}">${STACK[shiftCardIndex]}</span>`;
+  $('shiftTarget').textContent=shiftTarget;shiftInputValue='';renderShiftInput();clearFeedback('shiftFeedback');
+}
+function shiftAnswer(){
+  const from=shiftCardIndex+1,to=shiftTarget;
+  return (from-to+52)%52;
+}
+function renderShiftInput(){ $('shiftInputDisplay').textContent=shiftInputValue==='' ? '—' : shiftInputValue; }
+$('shiftNumberPad').addEventListener('click',e=>{
+  const btn=e.target.closest('button'); if(!btn) return;
+  const digit=btn.dataset.shiftNum;
+  if(digit!==undefined){
+    const next=shiftInputValue + digit;
+    if(next.length>2 || Number(next)>51) return;
+    shiftInputValue=next; renderShiftInput();
+  }
+  if(btn.dataset.shiftAction==='backspace'){
+    shiftInputValue=shiftInputValue.slice(0,-1); renderShiftInput();
+  }
+});
+$('shiftClear').onclick=()=>{shiftInputValue='';renderShiftInput();clearFeedback('shiftFeedback');};
+function checkShift(){
+  if(shiftInputValue===''){ $('shiftFeedback').className='feedback bad'; $('shiftFeedback').textContent='Enter a number from 0 to 51.'; return; }
+  const n=Number(shiftInputValue), answer=shiftAnswer();
+  const ok=n===answer;record('shift',ok);
+  $('shiftFeedback').className='feedback '+(ok?'good':'bad');
+  $('shiftFeedback').innerHTML=ok?`✓ Correct — cut ${answer} card${answer===1?'':'s'}`:`✕ Correct cut: <b>${answer}</b>`;
+}
+$('shiftCheck').onclick=checkShift;$('shiftNext').onclick=newShift;
+
+function newAround(){
+  aroundIndex=randIndex();renderPlayingCard($('aroundQuestion'),STACK[aroundIndex]);
+  $('aroundCenter').textContent=STACK[aroundIndex];
+  $('prevAnswer').querySelector('.nc').textContent='?';$('nextAnswer').querySelector('.nc').textContent='?';
+}
+function revealAround(){
+  const prev=STACK[(aroundIndex+51)%52], next=STACK[(aroundIndex+1)%52];
+  $('prevAnswer').querySelector('.nc').textContent=prev;$('nextAnswer').querySelector('.nc').textContent=next;
+  $('aroundSeen').textContent='Sequence viewed '+(parseInt(localStorage.getItem('aroundSeen')||'0',10)+1);
+  localStorage.setItem('aroundSeen',parseInt(localStorage.getItem('aroundSeen')||'0',10)+1);
+}
+$('aroundReveal').onclick=revealAround;$('aroundNext').onclick=newAround;
+
+renderStack();updateHeader();newPosition();newCard();newShift();newAround();
+['position','card','shift'].forEach(renderStats);
+</script>
+</body>
+</html>
