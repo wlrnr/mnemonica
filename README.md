@@ -12,3 +12,4 @@ Menus:
 The app stores practice statistics locally in the browser via localStorage.
 
 The stack data follows the Mnemonica.app reference page updated September 3, 2026.
+.
