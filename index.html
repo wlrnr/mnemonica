@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b0b0e">
-<title>Midnight Order — Mnemonica Trainer</title>
+<title>Midnight Order — Card Stack Trainer</title>
 <style>
 :root{
   --bg:#0b0b0e; --panel:#141419; --panel2:#1b1b23; --text:#f2f0e9;
@@ -84,20 +84,40 @@ h2{font-size:14px;font-weight:600;margin:0}
 .bottom-nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(760px,100%);background:rgba(12,12,16,.94);backdrop-filter:blur(18px);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);z-index:10}
 .nav-btn{border:0;background:transparent;color:var(--muted);padding:7px 2px;border-radius:10px;font-size:10px}
 .nav-btn .icon{font-size:18px;display:block;margin-bottom:3px}.nav-btn.active{color:var(--text);background:var(--panel)}
+.app.on-home{padding-bottom:0}.on-home .bottom-nav,.on-home .header-stat{display:none}.home{padding:32px 0}.home .guide-kicker{margin-bottom:12px}.home h1{font-size:38px;line-height:1.12;margin:0 0 12px}.home .lead{font-size:15px;max-width:460px;margin-bottom:28px}.stack-choice{display:block;width:100%;text-align:left;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:22px;margin:12px 0}.stack-choice:focus-visible,.btn:focus-visible,.nav-btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.stack-choice .choice-label{display:block;color:var(--accent);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px}.stack-choice strong{display:block;font-family:Georgia,serif;font-size:27px;font-weight:400;margin-bottom:7px}.stack-choice .choice-desc{display:block;color:var(--muted);font-size:13px;line-height:1.55}.stack-choice .choice-arrow{display:block;color:var(--accent);font-size:13px;margin-top:16px}.back-home{display:none;margin-left:auto;font-size:12px}.app:not(.on-home) .back-home{display:block}.stack-name{color:var(--accent);font-size:11px;letter-spacing:.12em;text-transform:uppercase}.stebbins-formula{margin-top:18px}.formula-chain{background:var(--card);color:#17171b;border-radius:14px;padding:18px 12px;text-align:center;font-family:Georgia,serif;font-size:21px;line-height:1.7;letter-spacing:.01em}.formula-chain .red{color:var(--red)}.stebbins-formula .guide-steps{margin-top:16px}.stebbins-formula .guide-step p{color:var(--muted)}
 @media(min-width:600px){.card-grid{grid-template-columns:repeat(6,1fr)}main{padding:10px 28px 30px}}
+@media(max-width:420px){header{flex-wrap:wrap;gap:8px}.header-stat{width:100%;text-align:right}.on-home header{flex-wrap:nowrap}}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app on-home" id="app">
 <header>
-  <div><div class="brand">Midnight Order</div><div class="subtitle">Mnemonica Trainer</div></div>
+  <div><div class="brand">Midnight Order</div><div class="subtitle" id="appSubtitle">Card Stack Trainer</div></div>
+  <button class="btn ghost back-home" id="backHome" type="button">← 스택 선택</button>
   <div class="header-stat" id="headerStat">0 / 0 today</div>
 </header>
 
 <main>
-<section class="view active" id="view-stack">
+<section class="view active home" id="view-home">
+  <div class="guide-kicker">Choose your stack</div>
+  <h1>어떤 스택을 연습할까요?</h1>
+  <p class="lead">카드 순서를 외우는 Mnemonica와 규칙으로 다음 카드를 계산하는 Si Stebbins 중 하나를 선택하세요.</p>
+  <button class="stack-choice" data-stack="mnemonica" type="button">
+    <span class="choice-label">Memorized deck</span><strong>Mnemonica</strong>
+    <span class="choice-desc">52장의 고정된 순서를 익히고, 카드와 위치를 양방향으로 떠올리는 연습</span>
+    <span class="choice-arrow">학습 시작 →</span>
+  </button>
+  <button class="stack-choice" data-stack="stebbins" type="button">
+    <span class="choice-label">Rule-based stack</span><strong>Si Stebbins</strong>
+    <span class="choice-desc">숫자 +3과 무늬 순환 규칙을 배우고, 카드와 위치를 계산하는 연습</span>
+    <span class="choice-arrow">학습 시작 →</span>
+  </button>
+</section>
+<section class="view" id="view-stack">
+  <div class="stack-name" id="activeStackName"></div>
   <h1>Stack</h1>
-  <p class="lead">The complete Mnemonica order. Tap “Hide positions” to turn this into a visual recall sheet.</p>
+  <p class="lead" id="stackLead">The complete Mnemonica order. Tap “Hide positions” to turn this into a visual recall sheet.</p>
+  <div id="mnemonicaStack">
   <div class="controls">
     <button class="btn" id="togglePositions">Hide positions</button>
     <button class="btn" id="scrollTopBtn">Top</button>
@@ -127,6 +147,20 @@ h2{font-size:14px;font-weight:600;margin:0}
         <b>Day 7</b><span>Previous / Next와 Shift까지 섞은 실전 테스트</span>
       </div>
       <p>추천 연습 순서는 Stack → Position → Card → Around → Shift입니다. 7일은 목표일 뿐이니, 회상이 느리다면 같은 구간을 며칠 더 반복하세요.</p>
+    </details>
+  </section>
+  </div>
+  <section class="stebbins-formula" id="stebbinsStack" hidden aria-label="Si Stebbins 공식">
+    <div class="formula-chain">3♣ → <span class="red">6♥</span> → 9♠ → <span class="red">Q♦</span> → 2♣ → <span class="red">5♥</span> …</div>
+    <div class="guide-steps">
+      <div class="guide-step"><b>01 — 숫자는 3씩 더하기</b><p>A를 1, J를 11, Q를 12, K를 13으로 보고 다음 카드마다 3을 더합니다. 13을 넘으면 13을 빼세요. 예: 9 → Q(12) → 2(15 − 13).</p></div>
+      <div class="guide-step"><b>02 — 무늬는 같은 순서로 돌기</b><p>이 앱에서는 ♣ → ♥ → ♠ → ♦ → ♣ 순서입니다. Clubs · Hearts · Spades · Diamonds의 첫 글자를 묶은 CHaSeD로 기억해 보세요.</p></div>
+      <div class="guide-step"><b>03 — 두 규칙을 함께 적용하기</b><p>시작 카드는 3♣입니다. 3에 3을 더하고 ♣ 다음 무늬인 ♥를 고르면 6♥. 그다음은 9♠입니다. 한 장 앞은 숫자에서 3을 빼고 무늬를 역순으로 찾으세요. 2에서 3을 빼면 Q(12)로 돌아갑니다.</p></div>
+      <div class="guide-step"><b>04 — 위치와 연결하기</b><p>이 앱의 퀴즈는 3♣을 1번으로 하는 순서를 사용합니다. Si Stebbins는 시작 카드와 무늬 순서를 다르게 정할 수도 있으니, 다른 배열과 위치를 비교할 때는 기준을 먼저 확인하세요.</p></div>
+    </div>
+    <details>
+      <summary>추천 연습 순서 보기</summary>
+      <p>먼저 규칙을 보고 다음 카드 10장을 직접 계산해 보세요. 이어서 Around에서 앞뒤 카드를 익히고, Position과 Card에서 위치를 확인한 뒤 Shift로 넘어가면 됩니다.</p>
     </details>
   </section>
 </section>
@@ -242,18 +276,29 @@ h2{font-size:14px;font-weight:600;margin:0}
 </div>
 
 <script>
-const STACK = ["4♣", "2♥", "7♦", "3♣", "4♥", "6♦", "A♠", "5♥", "9♠", "2♠", "Q♥", "3♦", "Q♣", "8♥", "6♠", "5♠", "9♥", "K♣", "2♦", "J♥", "3♠", "8♠", "6♥", "10♣", "5♦", "K♦", "2♣", "3♥", "8♦", "5♣", "K♠", "J♦", "8♣", "10♠", "K♥", "J♣", "7♠", "10♥", "A♦", "4♠", "7♥", "4♦", "A♣", "9♣", "J♠", "Q♦", "7♣", "Q♠", "10♦", "6♣", "A♥", "9♦"];
+const MNEMONICA = ["4♣", "2♥", "7♦", "3♣", "4♥", "6♦", "A♠", "5♥", "9♠", "2♠", "Q♥", "3♦", "Q♣", "8♥", "6♠", "5♠", "9♥", "K♣", "2♦", "J♥", "3♠", "8♠", "6♥", "10♣", "5♦", "K♦", "2♣", "3♥", "8♦", "5♣", "K♠", "J♦", "8♣", "10♠", "K♥", "J♣", "7♠", "10♥", "A♦", "4♠", "7♥", "4♦", "A♣", "9♣", "J♠", "Q♦", "7♣", "Q♠", "10♦", "6♣", "A♥", "9♦"];
+const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const STEBBINS_SUITS = ['♣','♥','♠','♦'];
+const STEBBINS = Array.from({length:52},(_,i)=>RANKS[(2+3*i)%13]+STEBBINS_SUITS[i%4]);
+const STACKS = {mnemonica:MNEMONICA, stebbins:STEBBINS};
+let activeStack=null, STACK=MNEMONICA;
 const SUITS = {'♠':'black','♣':'black','♥':'red','♦':'red'};
 const $ = id => document.getElementById(id);
 let hidePositions=false;
 let currentPosition = 37, currentCard = 36, shiftCardIndex=36, shiftTarget=21, shiftInputValue='', aroundIndex=36;
-let stats = JSON.parse(localStorage.getItem('midnightStats') || '{"position":{"c":0,"w":0,"streak":0},"card":{"c":0,"w":0,"streak":0},"shift":{"c":0,"w":0,"streak":0}}');
-let today = new Date().toISOString().slice(0,10);
-let daily = JSON.parse(localStorage.getItem('midnightDaily') || '{"date":"","attempts":0,"correct":0}');
-if(daily.date!==today){daily={date:today,attempts:0,correct:0};saveDaily();}
+const emptyStats=()=>({position:{c:0,w:0,streak:0},card:{c:0,w:0,streak:0},shift:{c:0,w:0,streak:0}});
+const today=()=>new Date().toLocaleDateString('en-CA');
+let stats=emptyStats(), daily={date:today(),attempts:0,correct:0};
+function loadProgress(){
+  const suffix=activeStack==='mnemonica'?'Mnemonica':'Stebbins';
+  stats=JSON.parse(localStorage.getItem('midnightStats'+suffix) || (activeStack==='mnemonica'?localStorage.getItem('midnightStats'):null) || 'null') || emptyStats();
+  daily=JSON.parse(localStorage.getItem('midnightDaily'+suffix) || (activeStack==='mnemonica'?localStorage.getItem('midnightDaily'):null) || 'null') || {date:'',attempts:0,correct:0};
+  if(daily.date!==today())daily={date:today(),attempts:0,correct:0};
+  save();saveDaily();
+}
 
-function save(){localStorage.setItem('midnightStats',JSON.stringify(stats)); updateHeader();}
-function saveDaily(){localStorage.setItem('midnightDaily',JSON.stringify(daily)); updateHeader();}
+function save(){if(activeStack)localStorage.setItem('midnightStats'+(activeStack==='mnemonica'?'Mnemonica':'Stebbins'),JSON.stringify(stats));updateHeader();}
+function saveDaily(){if(activeStack)localStorage.setItem('midnightDaily'+(activeStack==='mnemonica'?'Mnemonica':'Stebbins'),JSON.stringify(daily));updateHeader();}
 function updateHeader(){ $('headerStat').textContent = `${daily.correct} / ${daily.attempts} today`; }
 
 function cardHTML(card, pos, showPos=true){
@@ -267,12 +312,34 @@ $('togglePositions').onclick=()=>{hidePositions=!hidePositions;$('togglePosition
 $('scrollTopBtn').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 
 function showView(name){
+  $('app').classList.toggle('on-home',name==='home');
+  if(name==='home')$('appSubtitle').textContent='Card Stack Trainer';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   $('view-'+name).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
   window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+document.querySelectorAll('.stack-choice').forEach(b=>b.onclick=()=>selectStack(b.dataset.stack));
+$('backHome').onclick=()=>showView('home');
+function selectStack(name){
+  if(!STACKS[name])return;
+  activeStack=name;STACK=STACKS[name];
+  const isMnemonica=name==='mnemonica';
+  $('appSubtitle').textContent=(isMnemonica?'Mnemonica':'Si Stebbins')+' Trainer';
+  $('activeStackName').textContent=isMnemonica?'Mnemonica':'Si Stebbins';
+  $('stackLead').textContent=isMnemonica?'Mnemonica의 52장 순서입니다. 위치를 가리고 스스로 떠올려 보세요.':'3♣에서 시작하는 Si Stebbins 규칙을 익혀 보세요.';
+  $('mnemonicaStack').hidden=!isMnemonica;
+  $('stebbinsStack').hidden=isMnemonica;
+  hidePositions=false;$('togglePositions').textContent='Hide positions';
+  loadProgress();renderStack();newPosition();newCard();newShift();newAround();
+  const seenKey='aroundSeen'+(isMnemonica?'Mnemonica':'Stebbins');
+  if(isMnemonica && localStorage.getItem(seenKey)===null && localStorage.getItem('aroundSeen')!==null)
+    localStorage.setItem(seenKey,localStorage.getItem('aroundSeen'));
+  $('aroundSeen').textContent='Sequence viewed '+(localStorage.getItem(seenKey) || '0');
+  ['position','card','shift'].forEach(renderStats);
+  showView('stack');
+}
 
 function normalizeCard(s){
   return s.trim().replace(/\s+/g,'').toUpperCase()
@@ -393,13 +460,14 @@ function newAround(){
 function revealAround(){
   const prev=STACK[(aroundIndex+51)%52], next=STACK[(aroundIndex+1)%52];
   $('prevAnswer').querySelector('.nc').textContent=prev;$('nextAnswer').querySelector('.nc').textContent=next;
-  $('aroundSeen').textContent='Sequence viewed '+(parseInt(localStorage.getItem('aroundSeen')||'0',10)+1);
-  localStorage.setItem('aroundSeen',parseInt(localStorage.getItem('aroundSeen')||'0',10)+1);
+  const key='aroundSeen'+(activeStack==='mnemonica'?'Mnemonica':'Stebbins');
+  const seen=parseInt(localStorage.getItem(key)||'0',10)+1;
+  $('aroundSeen').textContent='Sequence viewed '+seen;
+  localStorage.setItem(key,seen);
 }
 $('aroundReveal').onclick=revealAround;$('aroundNext').onclick=newAround;
 
-renderStack();updateHeader();newPosition();newCard();newShift();newAround();
-['position','card','shift'].forEach(renderStats);
+updateHeader();
 </script>
 </body>
 </html>
